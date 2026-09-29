@@ -3,6 +3,7 @@ import { CHORD_TYPES } from '../core/chords'
 import { getDifficulty } from '../core/difficulty'
 import { formatScore, MAX_SCORE_PER_QUESTION } from '../core/scoring'
 import { Action, SessionState, sessionTotal } from '../core/session'
+import { formatAids } from '../core/aids'
 import { summarize } from '../core/stats'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 export default function Result({ state, dispatch }: Props) {
   const max = state.questions.length * MAX_SCORE_PER_QUESTION
   const stats = summarize(state.questions, state.answers)
+  const aids = formatAids(state.aids)
   const label = (id: string) => CHORD_TYPES.find((t) => t.id === id)?.label ?? id
 
   return (
@@ -43,6 +45,7 @@ export default function Result({ state, dispatch }: Props) {
           </>
         )}
       </div>
+      {aids && <p className="muted">補助の使用: {aids}</p>}
       <button className="btn primary big" onClick={() => dispatch({ type: 'review' })}>
         復習する
       </button>

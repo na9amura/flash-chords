@@ -60,4 +60,23 @@ describe('session reducer', () => {
     const s = reducer(reducer(initialState, { type: 'start', difficultyId: 'intermediate1' }), { type: 'reset' })
     expect(s).toEqual({ ...initialState, difficultyId: 'intermediate1' })
   })
+  it('counts aids used before answering, per kind', () => {
+    let s = reducer(initialState, { type: 'start' })
+    s = reducer(s, { type: 'useAid', kind: 'reference' })
+    s = reducer(s, { type: 'useAid', kind: 'reference' })
+    s = reducer(s, { type: 'useAid', kind: 'note' })
+    expect(s.aids).toEqual({ reference: 2, arpeggio: 0, note: 1 })
+  })
+  it('does not count aids after answering or outside the quiz', () => {
+    expect(reducer(initialState, { type: 'useAid', kind: 'arpeggio' })).toBe(initialState)
+    let s = reducer(initialState, { type: 'start' })
+    s = reducer(s, { type: 'answer', answer: s.questions[0] })
+    expect(reducer(s, { type: 'useAid', kind: 'arpeggio' })).toBe(s)
+  })
+  it('resets aids on start and reset', () => {
+    let s = reducer(reducer(initialState, { type: 'start' }), { type: 'useAid', kind: 'note' })
+    expect(reducer(s, { type: 'reset' }).aids).toEqual({ reference: 0, arpeggio: 0, note: 0 })
+    s = reducer(s, { type: 'start' })
+    expect(s.aids).toEqual({ reference: 0, arpeggio: 0, note: 0 })
+  })
 })

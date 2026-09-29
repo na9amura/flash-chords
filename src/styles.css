@@ -65,3 +65,10 @@ h2 { font-size: .9rem; color: var(--muted); margin: 16px 0 8px; font-weight: 600
 .misses { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
 .misses li { display: flex; justify-content: space-between; }
 .staff-loading { min-height: 250px; display: grid; place-items: center; color: var(--muted); }
+.replay-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.replay-row .replay { margin-top: 0; }
+.panel-actions { display: flex; gap: 8px; }
+.switch { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 4px; }
+.switch input { width: 24px; height: 24px; accent-color: var(--accent); }
+.note { min-height: 44px; background: transparent; color: var(--fg); font: inherit; font-weight: 700; cursor: pointer; }
+.note { min-width: 44px; justify-content: center; }

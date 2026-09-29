@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Chord, chordName } from '../core/chords'
 import { chordStaffNotes, StaffNote } from '../core/notation'
 import { ScoreBreakdown } from '../core/scoring'
-import { playChord } from '../audio/player'
+import { playArpeggio, playChord, playNote } from '../audio/player'
 // VexFlow は大きいので、楽譜を初めて表示するときに読み込む
 const Staff = lazy(() => import('./Staff'))
 
@@ -21,22 +21,33 @@ function Panel({ title, chord, notes, rootMismatch, showPlay }: PanelProps) {
         <strong>
           {title}: {chordName(chord)}
         </strong>
-        {showPlay && (
-          <button className="btn" onClick={() => void playChord(chord)}>
-            ▶ 再生
+        <div className="panel-actions">
+          {showPlay && (
+            <button className="btn" onClick={() => void playChord(chord)}>
+              ▶ 再生
+            </button>
+          )}
+          <button className="btn" onClick={() => void playArpeggio(chord)}>
+            ▶ 分散
           </button>
-        )}
+        </div>
       </div>
       <Suspense fallback={<div className="staff staff-loading">楽譜を読み込み中…</div>}>
         <Staff notes={notes} />
       </Suspense>
       <ul className="note-labels">
         {notes.map((n) => (
-          <li key={n.midi} className={`note ${n.flag}`}>
-            {n.label}
-            {n.flag === 'missing' && <small>不足</small>}
-            {n.flag === 'extra' && <small>余分</small>}
-            {n.isRoot && rootMismatch && <small>ルート違い</small>}
+          <li key={n.midi}>
+            <button
+              className={`note ${n.flag}`}
+              aria-label={`${n.label}を鳴らす`}
+              onClick={() => void playNote(n.midi)}
+            >
+              {n.label}
+              {n.flag === 'missing' && <small>不足</small>}
+              {n.flag === 'extra' && <small>余分</small>}
+              {n.isRoot && rootMismatch && <small>ルート違い</small>}
+            </button>
           </li>
         ))}
       </ul>
