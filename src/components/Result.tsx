@@ -1,7 +1,9 @@
 import { Dispatch } from 'react'
-import { Action, SessionState, sessionTotal } from '../core/session'
+import { CHORD_TYPES } from '../core/chords'
 import { getDifficulty } from '../core/difficulty'
-import { formatScore } from '../core/scoring'
+import { formatScore, MAX_SCORE_PER_QUESTION } from '../core/scoring'
+import { Action, SessionState, sessionTotal } from '../core/session'
+import { summarize } from '../core/stats'
 
 interface Props {
   state: SessionState
@@ -9,11 +11,38 @@ interface Props {
 }
 
 export default function Result({ state, dispatch }: Props) {
+  const max = state.questions.length * MAX_SCORE_PER_QUESTION
+  const stats = summarize(state.questions, state.answers)
+  const label = (id: string) => CHORD_TYPES.find((t) => t.id === id)?.label ?? id
+
   return (
     <section className="center">
       <h1>結果</h1>
       <p className="muted">難易度: {getDifficulty(state.difficultyId).label}</p>
-      <p className="score">{formatScore(sessionTotal(state), state.questions.length)}</p>
+      <p className="score">{formatScore(sessionTotal(state), max)}</p>
+      <div className="stats">
+        <div>
+          ルート <strong>{stats.rootCorrect} / {stats.total}</strong>
+        </div>
+        <div>
+          タイプ <strong>{stats.typeCorrect} / {stats.total}</strong>
+        </div>
+        {stats.typeMisses.length === 0 ? (
+          <p className="muted">タイプはすべて正解でした</p>
+        ) : (
+          <>
+            <h2>間違えたタイプ</h2>
+            <ul className="misses">
+              {stats.typeMisses.map((m) => (
+                <li key={m.typeId}>
+                  <span>{label(m.typeId)}</span>
+                  <strong>{m.missed} / {m.asked}</strong>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
       <button className="btn primary big" onClick={() => dispatch({ type: 'review' })}>
         復習する
       </button>

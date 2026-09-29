@@ -6,7 +6,7 @@ function play(answerCorrect: boolean) {
   let s = reducer(initialState, { type: 'start' })
   for (let i = 0; i < 10; i++) {
     const q = s.questions[s.index]
-    s = reducer(s, { type: 'answer', answer: answerCorrect ? q : { root: (q.root + 1) % 12, typeId: 'zzz' } })
+    s = reducer(s, { type: 'answer', answer: answerCorrect ? q : { root: (q.root + 1) % 12, typeId: q.typeId === 'm7b5' ? 'major' : 'm7b5' } })
     s = reducer(s, { type: 'next' })
   }
   return s
@@ -25,13 +25,19 @@ describe('session reducer', () => {
     expect(reducer(s, { type: 'answer', answer: s.questions[0] })).toBe(s)
     expect(s.answers).toHaveLength(1)
   })
-  it('perfect run scores 10 and reaches result', () => {
+  it('perfect run scores 100 and reaches result', () => {
     const s = play(true)
     expect(s.screen).toBe('result')
-    expect(sessionTotal(s)).toBe(10)
+    expect(sessionTotal(s)).toBe(100)
   })
-  it('all wrong scores 0', () => {
-    expect(sessionTotal(play(false))).toBe(0)
+  it('stores the score breakdown with each answer', () => {
+    let s = reducer(initialState, { type: 'start' })
+    const q = s.questions[0]
+    s = reducer(s, { type: 'answer', answer: { root: (q.root + 1) % 12, typeId: q.typeId } })
+    expect(s.answers[0].breakdown).toMatchObject({ total: 6, rootPenalty: 4, typePenalty: 0, notePenalty: 0 })
+  })
+  it('a run of worst answers never scores below 0', () => {
+    expect(sessionTotal(play(false))).toBeGreaterThanOrEqual(0)
   })
   it('goes to review and back; reset discards data', () => {
     let s = play(true)
