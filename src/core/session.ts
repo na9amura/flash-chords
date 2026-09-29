@@ -1,11 +1,11 @@
 import { Chord } from './chords'
 import { generateQuestions, Rng } from './questions'
 import { DEFAULT_DIFFICULTY_ID, typesForDifficulty } from './difficulty'
-import { scoreAnswer, totalScore } from './scoring'
+import { scoreAnswer, ScoreBreakdown, totalScore } from './scoring'
 
 export interface AnswerRecord {
   answer: Chord
-  score: number
+  breakdown: ScoreBreakdown
 }
 
 export type Screen = 'home' | 'quiz' | 'result' | 'review'
@@ -57,7 +57,7 @@ export function reducer(state: SessionState, action: Action): SessionState {
       return {
         ...state,
         revealed: true,
-        answers: [...state.answers, { answer: action.answer, score: scoreAnswer(correct, action.answer) }],
+        answers: [...state.answers, { answer: action.answer, breakdown: scoreAnswer(correct, action.answer) }],
       }
     }
     case 'next': {
@@ -76,5 +76,5 @@ export function reducer(state: SessionState, action: Action): SessionState {
 }
 
 export function sessionTotal(state: SessionState): number {
-  return totalScore(state.answers.map((a) => a.score))
+  return totalScore(state.answers.map((a) => a.breakdown.total))
 }

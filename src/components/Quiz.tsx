@@ -1,8 +1,10 @@
 import { Dispatch, useEffect, useState } from 'react'
 import { chordName } from '../core/chords'
+import { formatBreakdown, MAX_SCORE_PER_QUESTION } from '../core/scoring'
 import { Action, SessionState } from '../core/session'
 import { getDifficulty, typesForDifficulty } from '../core/difficulty'
 import { playChord } from '../audio/player'
+import ChordCompare from './ChordCompare'
 import { RootGrid, TypeButtons } from './Pickers'
 
 export default function Quiz({ state, dispatch }: { state: SessionState; dispatch: Dispatch<Action> }) {
@@ -45,13 +47,18 @@ export default function Quiz({ state, dispatch }: { state: SessionState; dispatc
       <TypeButtons value={typeId} onChange={setTypeId} disabled={revealed} types={types} />
 
       {record ? (
-        <div className={`feedback s${record.score === 1 ? 'ok' : record.score === 0 ? 'ng' : 'half'}`} role="status">
-          <strong>
-            {record.score === 1 ? '正解！' : record.score === 0.5 ? '惜しい！ (0.5点)' : '不正解'}
-          </strong>
+        <div
+          className={`feedback ${record.breakdown.total === MAX_SCORE_PER_QUESTION ? 'sok' : record.breakdown.total === 0 ? 'sng' : 'shalf'}`}
+          role="status"
+        >
+          <strong>今回の得点: {record.breakdown.total} / {MAX_SCORE_PER_QUESTION}</strong>
+          {formatBreakdown(record.breakdown) && <div className="muted">{formatBreakdown(record.breakdown)}</div>}
           <div>正解: {chordName(question)}</div>
           <div>あなたの回答: {chordName(record.answer)}</div>
         </div>
+      ) : null}
+      {record ? (
+        <ChordCompare correct={question} answer={record.answer} breakdown={record.breakdown} />
       ) : null}
 
       <div className="footer">

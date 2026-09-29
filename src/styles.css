@@ -49,3 +49,19 @@ h2 { font-size: .9rem; color: var(--muted); margin: 16px 0 8px; font-weight: 600
 .btn.difficulty { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .btn.difficulty small { opacity: .8; text-align: right; }
 .progress .muted { white-space: nowrap; }
+.compare { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.staff { color: var(--fg); margin: 8px auto 0; max-width: 240px; }
+.staff svg { display: block; }
+.note-labels { list-style: none; padding: 0; margin: 4px 0 0; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.note { display: inline-flex; align-items: baseline; gap: 4px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); font-weight: 700; }
+.note small { font-weight: 600; }
+.note.missing { color: var(--half); border-color: var(--half); }
+.note.extra { color: var(--ng); border-color: var(--ng); }
+.card > .btn { margin-top: 8px; }
+.stats { display: flex; flex-direction: column; gap: 4px; text-align: left; margin-bottom: 8px; }
+.stats > div { display: flex; justify-content: space-between; }
+.misses { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.misses li { display: flex; justify-content: space-between; }
+.staff-loading { min-height: 250px; display: grid; place-items: center; color: var(--muted); }
