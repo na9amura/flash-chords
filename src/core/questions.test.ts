@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CHORD_TYPES } from './chords'
+import { DIFFICULTIES, typesForDifficulty } from './difficulty'
 import { generateQuestions } from './questions'
 
 describe('generateQuestions', () => {
@@ -25,6 +26,19 @@ describe('generateQuestions', () => {
       const qs = generateQuestions()
       for (let i = 1; i < qs.length; i++) {
         expect(qs[i].root === qs[i - 1].root && qs[i].typeId === qs[i - 1].typeId).toBe(false)
+      }
+    }
+  })
+  it('only uses the difficulty\'s types, without consecutive repeats', () => {
+    for (const d of DIFFICULTIES) {
+      const types = typesForDifficulty(d.id)
+      const allowed = types.map((t) => t.id)
+      for (const rng of [() => 0, () => 0.999999, Math.random]) {
+        const qs = generateQuestions(200, rng, types)
+        expect(qs.every((q) => allowed.includes(q.typeId))).toBe(true)
+        for (let i = 1; i < qs.length; i++) {
+          expect(qs[i].root === qs[i - 1].root && qs[i].typeId === qs[i - 1].typeId).toBe(false)
+        }
       }
     }
   })

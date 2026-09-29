@@ -1,6 +1,7 @@
 import { Dispatch } from 'react'
 import { chordName } from '../core/chords'
 import { Action, SessionState } from '../core/session'
+import { getDifficulty } from '../core/difficulty'
 import { playChord } from '../audio/player'
 
 export default function Review({ state, dispatch }: { state: SessionState; dispatch: Dispatch<Action> }) {
@@ -11,6 +12,7 @@ export default function Review({ state, dispatch }: { state: SessionState; dispa
           ← 結果へ
         </button>
         <h1>復習</h1>
+        <span className="muted">{getDifficulty(state.difficultyId).label}</span>
       </header>
       <ol className="list">
         {state.questions.map((q, i) => {

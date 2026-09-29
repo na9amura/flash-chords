@@ -1,12 +1,14 @@
 import { Dispatch, useEffect, useState } from 'react'
 import { chordName } from '../core/chords'
 import { Action, SessionState } from '../core/session'
+import { getDifficulty, typesForDifficulty } from '../core/difficulty'
 import { playChord } from '../audio/player'
 import { RootGrid, TypeButtons } from './Pickers'
 
 export default function Quiz({ state, dispatch }: { state: SessionState; dispatch: Dispatch<Action> }) {
   const { index, questions, answers, revealed } = state
   const question = questions[index]
+  const types = typesForDifficulty(state.difficultyId)
   const [root, setRoot] = useState<number | null>(null)
   const [typeId, setTypeId] = useState<string | null>(null)
 
@@ -29,6 +31,7 @@ export default function Quiz({ state, dispatch }: { state: SessionState; dispatc
         <span>
           {index + 1} / {questions.length}
         </span>
+        <span className="muted">{getDifficulty(state.difficultyId).label}</span>
         <progress value={index + (revealed ? 1 : 0)} max={questions.length} />
       </header>
 
@@ -39,7 +42,7 @@ export default function Quiz({ state, dispatch }: { state: SessionState; dispatc
       <h2>ルート</h2>
       <RootGrid value={root} onChange={setRoot} disabled={revealed} />
       <h2>タイプ</h2>
-      <TypeButtons value={typeId} onChange={setTypeId} disabled={revealed} />
+      <TypeButtons value={typeId} onChange={setTypeId} disabled={revealed} types={types} />
 
       {record ? (
         <div className={`feedback s${record.score === 1 ? 'ok' : record.score === 0 ? 'ng' : 'half'}`} role="status">

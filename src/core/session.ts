@@ -1,5 +1,6 @@
 import { Chord } from './chords'
 import { generateQuestions, Rng } from './questions'
+import { DEFAULT_DIFFICULTY_ID, typesForDifficulty } from './difficulty'
 import { scoreAnswer, totalScore } from './scoring'
 
 export interface AnswerRecord {
@@ -11,6 +12,7 @@ export type Screen = 'home' | 'quiz' | 'result' | 'review'
 
 export interface SessionState {
   screen: Screen
+  difficultyId: string
   questions: Chord[]
   answers: AnswerRecord[]
   /** 現在の問題index(0始まり) */
@@ -20,7 +22,7 @@ export interface SessionState {
 }
 
 export type Action =
-  | { type: 'start'; rng?: Rng }
+  | { type: 'start'; difficultyId?: string; rng?: Rng }
   | { type: 'answer'; answer: Chord }
   | { type: 'next' }
   | { type: 'review' }
@@ -29,6 +31,7 @@ export type Action =
 
 export const initialState: SessionState = {
   screen: 'home',
+  difficultyId: DEFAULT_DIFFICULTY_ID,
   questions: [],
   answers: [],
   index: 0,
@@ -37,14 +40,17 @@ export const initialState: SessionState = {
 
 export function reducer(state: SessionState, action: Action): SessionState {
   switch (action.type) {
-    case 'start':
+    case 'start': {
+      const difficultyId = action.difficultyId ?? state.difficultyId
       return {
         screen: 'quiz',
-        questions: generateQuestions(undefined, action.rng),
+        difficultyId,
+        questions: generateQuestions(undefined, action.rng, typesForDifficulty(difficultyId)),
         answers: [],
         index: 0,
         revealed: false,
       }
+    }
     case 'answer': {
       if (state.screen !== 'quiz' || state.revealed) return state
       const correct = state.questions[state.index]
@@ -64,7 +70,8 @@ export function reducer(state: SessionState, action: Action): SessionState {
     case 'backToResult':
       return state.screen === 'review' ? { ...state, screen: 'result' } : state
     case 'reset':
-      return initialState
+      // 前回の難易度は選択状態として残し、問題・回答は破棄する
+      return { ...initialState, difficultyId: state.difficultyId }
   }
 }
 

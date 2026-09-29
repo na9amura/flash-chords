@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { typesForDifficulty } from './difficulty'
 import { initialState, reducer, sessionTotal } from './session'
 
 function play(answerCorrect: boolean) {
@@ -39,5 +40,18 @@ describe('session reducer', () => {
     s = reducer(s, { type: 'backToResult' })
     expect(s.screen).toBe('result')
     expect(reducer(s, { type: 'reset' })).toEqual(initialState)
+  })
+  it('start with a difficulty only asks that difficulty\'s types', () => {
+    for (const d of ['beginner', 'intermediate1', 'intermediate2', 'advanced']) {
+      const s = reducer(initialState, { type: 'start', difficultyId: d })
+      const allowed = typesForDifficulty(d).map((t) => t.id)
+      expect(s.difficultyId).toBe(d)
+      expect(s.questions).toHaveLength(10)
+      expect(s.questions.every((q) => allowed.includes(q.typeId))).toBe(true)
+    }
+  })
+  it('reset clears questions/answers but keeps the last difficulty selected', () => {
+    const s = reducer(reducer(initialState, { type: 'start', difficultyId: 'intermediate1' }), { type: 'reset' })
+    expect(s).toEqual({ ...initialState, difficultyId: 'intermediate1' })
   })
 })

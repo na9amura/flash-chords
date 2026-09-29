@@ -1,4 +1,4 @@
-import { CHORD_TYPES, ROOTS } from '../core/chords'
+import { ChordType, CHORD_TYPES, ROOTS } from '../core/chords'
 
 interface Props<T> {
   value: T | null
@@ -24,10 +24,10 @@ export function RootGrid({ value, onChange, disabled }: Props<number>) {
   )
 }
 
-export function TypeButtons({ value, onChange, disabled }: Props<string>) {
+export function TypeButtons({ value, onChange, disabled, types = CHORD_TYPES }: Props<string> & { types?: ChordType[] }) {
   return (
     <div className="grid types" role="group" aria-label="コードタイプ">
-      {CHORD_TYPES.map((t) => (
+      {types.map((t) => (
         <button
           key={t.id}
           className={`btn${value === t.id ? ' selected' : ''}`}
