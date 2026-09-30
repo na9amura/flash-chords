@@ -105,3 +105,11 @@ src/components/  画面コンポーネント
 - 復習画面と回答後の楽譜では、構成音の音名ラベルを押すと、その音を単音で鳴らせます(スイッチとは無関係。回数には数えません)。
 
 音は常に1つだけ鳴り、新しく鳴らすと前の音は止まります。
+
+## 公開(GitHub Pages)
+
+`main` に push されると、GitHub Actions(`.github/workflows/deploy.yml`)がテストとビルドを実行し、`dist/` を GitHub Pages に公開します。公開URLは `https://<ユーザー名>.github.io/flash-chords/` です。
+
+初回だけ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。設定後は、Actions タブの「Deploy to GitHub Pages」から手動実行(Run workflow)もできます。
+
+ビルドは相対パス(`base: './'`)なので、サブパス配下でもそのまま動きます。
