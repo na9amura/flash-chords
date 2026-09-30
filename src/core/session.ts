@@ -1,5 +1,6 @@
 import { Chord } from './chords'
 import { generateQuestions, Rng } from './questions'
+import { AidCounts, AidKind, emptyAids } from './aids'
 import { DEFAULT_DIFFICULTY_ID, typesForDifficulty } from './difficulty'
 import { scoreAnswer, ScoreBreakdown, totalScore } from './scoring'
 
@@ -19,11 +20,14 @@ export interface SessionState {
   index: number
   /** 回答済みで正誤表示中(「次へ」待ち) */
   revealed: boolean
+  /** 回答前に使った補助の回数(採点には影響しない) */
+  aids: AidCounts
 }
 
 export type Action =
   | { type: 'start'; difficultyId?: string; rng?: Rng }
   | { type: 'answer'; answer: Chord }
+  | { type: 'useAid'; kind: AidKind }
   | { type: 'next' }
   | { type: 'review' }
   | { type: 'backToResult' }
@@ -36,6 +40,7 @@ export const initialState: SessionState = {
   answers: [],
   index: 0,
   revealed: false,
+  aids: emptyAids,
 }
 
 export function reducer(state: SessionState, action: Action): SessionState {
@@ -49,8 +54,12 @@ export function reducer(state: SessionState, action: Action): SessionState {
         answers: [],
         index: 0,
         revealed: false,
+        aids: emptyAids,
       }
     }
+    case 'useAid':
+      if (state.screen !== 'quiz' || state.revealed) return state
+      return { ...state, aids: { ...state.aids, [action.kind]: state.aids[action.kind] + 1 } }
     case 'answer': {
       if (state.screen !== 'quiz' || state.revealed) return state
       const correct = state.questions[state.index]

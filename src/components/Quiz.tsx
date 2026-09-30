@@ -3,16 +3,26 @@ import { chordName } from '../core/chords'
 import { formatBreakdown, MAX_SCORE_PER_QUESTION } from '../core/scoring'
 import { Action, SessionState } from '../core/session'
 import { getDifficulty, typesForDifficulty } from '../core/difficulty'
-import { playChord } from '../audio/player'
+import { REFERENCE_TONES } from '../core/aids'
+import { BASE_MIDI } from '../core/voicing'
+import { playArpeggio, playChord, playNote, stopCurrent, toggleReference } from '../audio/player'
 import ChordCompare from './ChordCompare'
 import { RootGrid, TypeButtons } from './Pickers'
 
-export default function Quiz({ state, dispatch }: { state: SessionState; dispatch: Dispatch<Action> }) {
+interface Props {
+  state: SessionState
+  dispatch: Dispatch<Action>
+  noteTap: boolean
+  onNoteTapChange: (v: boolean) => void
+}
+
+export default function Quiz({ state, dispatch, noteTap, onNoteTapChange }: Props) {
   const { index, questions, answers, revealed } = state
   const question = questions[index]
   const types = typesForDifficulty(state.difficultyId)
   const [root, setRoot] = useState<number | null>(null)
   const [typeId, setTypeId] = useState<string | null>(null)
+  const [playingRef, setPlayingRef] = useState<number | null>(null)
 
   // 新しい問題に入ったら選択をリセットして自動再生
   useEffect(() => {
@@ -20,6 +30,25 @@ export default function Quiz({ state, dispatch }: { state: SessionState; dispatc
     setTypeId(null)
     void playChord(question)
   }, [index, question])
+
+  // 画面を離れるときは鳴っている音を止める
+  useEffect(() => stopCurrent, [])
+
+  const useAid = (kind: 'reference' | 'arpeggio' | 'note') => {
+    if (!revealed) dispatch({ type: 'useAid', kind })
+  }
+  const pickRoot = (r: number) => {
+    setRoot(r)
+    if (noteTap) {
+      void playNote(BASE_MIDI + r)
+      useAid('note')
+    }
+  }
+  const pressReference = async (freq: number) => {
+    const started = await toggleReference(freq, () => setPlayingRef((p) => (p === freq ? null : p)))
+    setPlayingRef(started ? freq : null)
+    if (started) useAid('reference')
+  }
 
   const record = revealed ? answers[index] : null
   const submit = () => {
@@ -37,12 +66,42 @@ export default function Quiz({ state, dispatch }: { state: SessionState; dispatc
         <progress value={index + (revealed ? 1 : 0)} max={questions.length} />
       </header>
 
-      <button className="btn replay" onClick={() => void playChord(question)}>
-        🔊 もう一度聞く
-      </button>
+      <div className="replay-row">
+        <button className="btn replay" onClick={() => void playChord(question)}>
+          🔊 もう一度聞く
+        </button>
+        <button
+          className="btn replay"
+          onClick={() => {
+            void playArpeggio(question)
+            useAid('arpeggio')
+          }}
+        >
+          🎼 分散して聞く
+        </button>
+      </div>
+
+      <h2>基準音</h2>
+      <div className="grid types" role="group" aria-label="基準音">
+        {REFERENCE_TONES.map((t) => (
+          <button
+            key={t.id}
+            className={`btn${playingRef === t.freq ? ' selected' : ''}`}
+            aria-pressed={playingRef === t.freq}
+            onClick={() => void pressReference(t.freq)}
+          >
+            {playingRef === t.freq ? '■ ' : '▶ '}
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       <h2>ルート</h2>
-      <RootGrid value={root} onChange={setRoot} disabled={revealed} />
+      <label className="switch" htmlFor="note-tap">
+        <input id="note-tap" type="checkbox" checked={noteTap} onChange={(e) => onNoteTapChange(e.target.checked)} />
+        <span>音名をタップすると単音を鳴らす</span>
+      </label>
+      <RootGrid value={root} onChange={pickRoot} disabled={revealed} />
       <h2>タイプ</h2>
       <TypeButtons value={typeId} onChange={setTypeId} disabled={revealed} types={types} />
 
